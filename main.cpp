@@ -3,7 +3,9 @@
 #define beep 1
 #define exit_win 2
 
+HWND edit;
 HMENU hMenu;
+int h, w;
 
 //This function adds menus to the window
 void AddMenus(HWND hwnd) {
@@ -28,9 +30,13 @@ void AddMenus(HWND hwnd) {
 }
 
 void AddControls(HWND hwnd) {
+    RECT rect;
+    GetWindowRect(hwnd, &rect);
+    h = rect.bottom-rect.top;
+    w = rect.right-rect.left;
     //CreateWindowW(L"Static", L"Enter the text here:-", WS_VISIBLE | WS_CHILD, 0, 10, 100, 15, hwnd, NULL, NULL, NULL);
-    //CreateWindowW(L"Edit", L".,.", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL, 0, 0, 1020, 682, hwnd, NULL, NULL, NULL) ;
-    CreateWindowW(L"Edit", L"Enter your text here", WS_VISIBLE | WS_CHILD | ES_MULTILINE | ES_AUTOVSCROLL, 0, 0, 620, 420, hwnd, NULL, NULL, NULL) ;
+    edit = CreateWindowW(L"Edit", L"", WS_VISIBLE | WS_BORDER | WS_CHILD | ES_MULTILINE | ES_AUTOVSCROLL, 0, 0, w-20, h-50, hwnd, NULL, NULL, NULL) ;
+    //CreateWindowEx(0L, "SCROLLBAR", (LPSTR)NULL, WS_CHILD | SBS_VERT, 0, 0, 200, CW_USEDEFAULT, hwnd, (HMENU)NULL, hinst, (LPVOID)NULL);
 }
 
 /* This is where all the input to the window goes to */
@@ -44,7 +50,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_CREATE:
 			AddMenus(hwnd);
 			AddControls(hwnd);
-			break;
+
+		case WM_SIZE:
+		//To resize child window when parent window is resized
+		    RECT rect;
+            GetWindowRect(hwnd, &rect);
+            h = rect.bottom-rect.top;
+            w = rect.right-rect.left;
+            SetWindowPos(edit, hwnd, 0, 0, w-20, h-50, SWP_NOZORDER);
+            break;
+
 		/* Upon destruction, tell the main thread to stop */
 		case WM_DESTROY: {
 			PostQuitMessage(0);
@@ -82,7 +97,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return 0;
 	}
 
-	hwnd = CreateWindowEx(WS_EX_CLIENTEDGE,"WindowClass","Sample Project",WS_VISIBLE|WS_OVERLAPPEDWINDOW,
+	hwnd = CreateWindowEx(WS_EX_CLIENTEDGE,"WindowClass","Notepad",WS_VISIBLE | WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, /* x */
 		CW_USEDEFAULT, /* y */
 		640, /* width */
@@ -105,4 +120,3 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	return msg.wParam;
 }
-
