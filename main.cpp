@@ -1,10 +1,11 @@
 #include <windows.h>
 #include <stdio.h>
 
-#define beep 1
+#define beep_sound 1
 #define exit_win 2
 #define open_f 3
 #define new_txt 4
+#define save_f 5
 
 HWND edit;
 HMENU hMenu;
@@ -16,25 +17,53 @@ void AddMenus(HWND hwnd) {
 	hMenu = CreateMenu();
 	HMENU hFileMenu = CreateMenu();
 	HMENU hHelpMenu = CreateMenu();
-	HMENU hSubMenu = CreateMenu();
 
-	AppendMenu(hSubMenu, MF_STRING, new_txt, "Text File");
-
-	AppendMenu(hFileMenu, MF_POPUP, (UINT)hSubMenu, "New");
+	AppendMenu(hFileMenu, MF_STRING, new_txt, "New");
+	AppendMenu(hFileMenu, MF_STRING, save_f, "Save");
 	AppendMenu(hFileMenu, MF_STRING, open_f, "Open");
 	AppendMenu(hFileMenu, MF_SEPARATOR, NULL, NULL);
 	AppendMenu(hFileMenu, MF_STRING, exit_win, "Exit");
 
-	AppendMenu(hHelpMenu, MF_STRING, beep, "About Notepad");
+	AppendMenu(hHelpMenu, MF_STRING, beep_sound, "About Notepad");
 
 	AppendMenu(hMenu, MF_POPUP, (UINT)hFileMenu, "File");
 	AppendMenu(hMenu, MF_POPUP, (UINT)hHelpMenu, "Help");
 	SetMenu(hwnd, hMenu);
 }
 
+void save_file(char* path) {
+    FILE *file;
+    file = fopen(path, "w");
+
+    int fsize = GetWindowTextLength(edit);
+    char *text = new char[fsize+1];
+    GetWindowText(edit, text, fsize+1);
+
+    fwrite(text, fsize, 1, file);
+    fclose(file);
+}
+
+void save_choose(HWND hwnd) {
+    OPENFILENAME sv;
+    char filename[50];
+    ZeroMemory(&sv, sizeof(OPENFILENAME));
+
+    sv.lStructSize = sizeof(OPENFILENAME);
+    sv.hwndOwner = hwnd;
+    sv.lpstrFile = filename;
+    sv.lpstrFile[0] = '\0';
+    sv.nMaxFile = 50;
+    sv.lpstrFilter = "All Files\0*.*\0Text Files\0*.txt\0";
+    sv.nFilterIndex = 1;
+
+    GetSaveFileName(&sv);
+    save_file(sv.lpstrFile);
+}
+
 void open_file(char *path) {
     FILE *file;
     file = fopen(path, "rb");
+
     fseek(file, 0, SEEK_END);
     int fsize = ftell(file);
     rewind(file);
@@ -42,6 +71,8 @@ void open_file(char *path) {
     fread(text, fsize, 1, file);
     text[fsize] = '\0';
     SetWindowText(edit, text);
+
+    fclose(file);
 }
 
 void open_choose(HWND hwnd) {
@@ -75,11 +106,12 @@ void AddControls(HWND hwnd) {
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	switch(Message) {
 		case WM_COMMAND:
-			if(wParam == beep) MessageBeep(MB_OK);
+			if(wParam == beep_sound) MessageBeep(MB_OK);
 			if(wParam == exit_win) {
 			    MessageBox(hwnd, "You will be exiting the application by clicking on OK", "Exit Dialog Box", NULL);
                 DestroyWindow(hwnd);
 			}
+			if(wParam == save_f) save_choose(hwnd);
 			if(wParam == open_f) open_choose(hwnd);
 			if(wParam == new_txt) SetWindowText(edit, "");
 			break;
