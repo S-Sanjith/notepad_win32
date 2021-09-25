@@ -63,15 +63,15 @@ void save_choose(HWND hwnd) {
 void open_file(char *path) {
     FILE *file;
     file = fopen(path, "rb");
-
-    fseek(file, 0, SEEK_END);
-    int fsize = ftell(file);
-    rewind(file);
-    char *text = new char[fsize+1];
-    fread(text, fsize, 1, file);
-    text[fsize] = '\0';
-    SetWindowText(edit, text);
-
+    if(file) {
+        fseek(file, 0, SEEK_END);
+        int fsize = ftell(file);
+        rewind(file);
+        char *text = new char[fsize+1];
+        fread(text, fsize, 1, file);
+        text[fsize] = '\0';
+        SetWindowText(edit, text);
+    }
     fclose(file);
 }
 
@@ -98,7 +98,7 @@ void AddControls(HWND hwnd) {
     h = rect.bottom-rect.top;
     w = rect.right-rect.left;
     //CreateWindowW(L"Static", L"Enter the text here:-", WS_VISIBLE | WS_CHILD, 0, 10, 100, 15, hwnd, NULL, NULL, NULL);
-    edit = CreateWindowW(L"Edit", L"", WS_VISIBLE | WS_BORDER | WS_CHILD | ES_MULTILINE | ES_AUTOVSCROLL, 0, 0, w-20, h-50, hwnd, NULL, NULL, NULL) ;
+    edit = CreateWindowW(L"Edit", L"", WS_VISIBLE | WS_BORDER | WS_CHILD | ES_MULTILINE | WS_VSCROLL, 0, 0, w-20, h-50, hwnd, NULL, NULL, NULL) ;
     //edit1 = CreateWindowEx(0, "SCROLLBAR", (PTSTR)NULL, WS_CHILD | WS_VISIBLE | WS_OVERLAPPED | SBS_VERT, rect.right-87, 0, 10, rect.bottom/*CW_USEDEFAULT*/, hwnd, (HMENU)NULL, hInst, (PVOID)NULL);
 }
 
