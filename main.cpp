@@ -1,7 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
 
-#define beep_sound 1
+#define help_msg 1
 #define exit_win 2
 #define open_f 3
 #define new_txt 4
@@ -24,7 +24,7 @@ void AddMenus(HWND hwnd) {
 	AppendMenu(hFileMenu, MF_SEPARATOR, NULL, NULL);
 	AppendMenu(hFileMenu, MF_STRING, exit_win, "Exit");
 
-	AppendMenu(hHelpMenu, MF_STRING, beep_sound, "About Notepad");
+	AppendMenu(hHelpMenu, MF_STRING, help_msg, "About this Text Editor");
 
 	AppendMenu(hMenu, MF_POPUP, (UINT)hFileMenu, "File");
 	AppendMenu(hMenu, MF_POPUP, (UINT)hHelpMenu, "Help");
@@ -44,20 +44,23 @@ void save_file(char* path) {
 }
 
 void save_choose(HWND hwnd) {
-    OPENFILENAME sv;
-    char filename[50];
-    ZeroMemory(&sv, sizeof(OPENFILENAME));
+    int n = MessageBox(hwnd, "Note that while you save this file, any other file with the same name and extension as this file in the same directory will be replaced.", "Alert", MB_OKCANCEL | MB_ICONEXCLAMATION);
+    if(n == IDOK) {
+        OPENFILENAME sv;
+        char filename[50];
+        ZeroMemory(&sv, sizeof(OPENFILENAME));
 
-    sv.lStructSize = sizeof(OPENFILENAME);
-    sv.hwndOwner = hwnd;
-    sv.lpstrFile = filename;
-    sv.lpstrFile[0] = '\0';
-    sv.nMaxFile = 50;
-    sv.lpstrFilter = "All Files\0*.*\0Text Files\0*.txt\0";
-    sv.nFilterIndex = 1;
+        sv.lStructSize = sizeof(OPENFILENAME);
+        sv.hwndOwner = hwnd;
+        sv.lpstrFile = filename;
+        sv.lpstrFile[0] = '\0';
+        sv.nMaxFile = 50;
+        sv.lpstrFilter = "All Files\0*.*\0Text Files\0*.txt\0";
+        sv.nFilterIndex = 1;
 
-    GetSaveFileName(&sv);
-    save_file(sv.lpstrFile);
+        GetSaveFileName(&sv);
+        save_file(sv.lpstrFile);
+    }
 }
 
 void open_file(char *path) {
@@ -97,23 +100,23 @@ void AddControls(HWND hwnd) {
     GetWindowRect(hwnd, &rect);
     h = rect.bottom-rect.top;
     w = rect.right-rect.left;
-    //CreateWindowW(L"Static", L"Enter the text here:-", WS_VISIBLE | WS_CHILD, 0, 10, 100, 15, hwnd, NULL, NULL, NULL);
-    edit = CreateWindowW(L"Edit", L"", WS_VISIBLE | WS_BORDER | WS_CHILD | ES_MULTILINE | WS_VSCROLL, 0, 0, w-20, h-50, hwnd, NULL, NULL, NULL) ;
-    //edit1 = CreateWindowEx(0, "SCROLLBAR", (PTSTR)NULL, WS_CHILD | WS_VISIBLE | WS_OVERLAPPED | SBS_VERT, rect.right-87, 0, 10, rect.bottom/*CW_USEDEFAULT*/, hwnd, (HMENU)NULL, hInst, (PVOID)NULL);
+    edit = CreateWindowW(L"Edit", L"", WS_VISIBLE | /*WS_BORDER |*/ WS_CHILD | ES_MULTILINE | WS_VSCROLL, 0, 0, w-20, h-50, hwnd, NULL, NULL, NULL) ;
 }
 
 /* This is where all the input to the window goes to */
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	switch(Message) {
 		case WM_COMMAND:
-			if(wParam == beep_sound) MessageBeep(MB_OK);
+			//if(wParam == beep_sound) MessageBeep(MB_OK);
 			if(wParam == exit_win) {
-			    MessageBox(hwnd, "You will be exiting the application by clicking on OK", "Exit Dialog Box", NULL);
-                DestroyWindow(hwnd);
+			    int n = MessageBox(hwnd, "Do you want to exit this application?", "Exit Dialog Box", MB_YESNO | MB_ICONQUESTION);
+			    if(n == IDYES)
+                    DestroyWindow(hwnd);
 			}
 			if(wParam == save_f) save_choose(hwnd);
 			if(wParam == open_f) open_choose(hwnd);
 			if(wParam == new_txt) SetWindowText(edit, "");
+			if(wParam == help_msg) MessageBox(hwnd, "This is a basic text editor for Windows, which you can use to edit plain text, save text files and open text files", "About this Text Editor", MB_OK);
 			break;
 		//Upon window creation
 		case WM_CREATE:
@@ -128,6 +131,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
             w = rect.right-rect.left;
             SetWindowPos(edit, hwnd, 0, 0, w-20, h-50, SWP_NOZORDER);
             break;
+
+        case WM_CLOSE: {
+            int n = MessageBox(hwnd, "Do you want to exit this application?", "Exit Dialog Box", MB_YESNO | MB_ICONQUESTION);
+            if(n == IDYES)
+                DestroyWindow(hwnd);
+            break;
+        }
 
 		/* Upon destruction, tell the main thread to stop */
 		case WM_DESTROY: {

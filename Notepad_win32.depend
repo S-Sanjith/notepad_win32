@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1632594579 source:d:\codeblocks_codes\other_codes\notepad_win32\main.cpp
+1632645030 source:d:\codeblocks_codes\other_codes\notepad_win32\main.cpp
 	<windows.h>
 	<stdio.h>
 
