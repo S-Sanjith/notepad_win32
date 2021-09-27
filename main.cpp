@@ -31,6 +31,7 @@ void AddMenus(HWND hwnd) {
 	SetMenu(hwnd, hMenu);
 }
 
+//Save the file in the path passed as an argument
 void save_file(char* path) {
     FILE *file;
     file = fopen(path, "w");
@@ -43,6 +44,7 @@ void save_file(char* path) {
     fclose(file);
 }
 
+//Open the window for the user to give a name for the file to be saved and also the path where the file would be saved
 void save_choose(HWND hwnd) {
     int n = MessageBox(hwnd, "Note that while you save this file, any other file with the same name and extension as this file in the same directory will be replaced.", "Alert", MB_OKCANCEL | MB_ICONEXCLAMATION);
     if(n == IDOK) {
@@ -63,6 +65,7 @@ void save_choose(HWND hwnd) {
     }
 }
 
+//Open the file whose path is passed as an argument to the function
 void open_file(char *path) {
     FILE *file;
     file = fopen(path, "rb");
@@ -78,6 +81,7 @@ void open_file(char *path) {
     fclose(file);
 }
 
+//Open a window for the user to choose the file to be opened
 void open_choose(HWND hwnd) {
     OPENFILENAME op;
     char fileName[50];
@@ -95,12 +99,18 @@ void open_choose(HWND hwnd) {
     open_file(op.lpstrFile);
 }
 
+
 void AddControls(HWND hwnd) {
     RECT rect;
     GetWindowRect(hwnd, &rect);
     h = rect.bottom-rect.top;
     w = rect.right-rect.left;
-    edit = CreateWindowW(L"Edit", L"", WS_VISIBLE | /*WS_BORDER |*/ WS_CHILD | ES_MULTILINE | WS_VSCROLL, 0, 0, w-20, h-50, hwnd, NULL, NULL, NULL) ;
+
+    edit = CreateWindowW(L"Edit", L"", WS_VISIBLE | WS_CHILD | ES_MULTILINE | WS_VSCROLL, 0, 0, w-20, h-50, hwnd, NULL, NULL, NULL);
+
+    //Create and assign a font for the text
+    HFONT hFont = CreateFont(13, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, "Lucida Console");
+    SendMessage(edit, WM_SETFONT, WPARAM (hFont), true);
 }
 
 /* This is where all the input to the window goes to */
@@ -108,20 +118,32 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 	switch(Message) {
 		case WM_COMMAND:
 			//if(wParam == beep_sound) MessageBeep(MB_OK);
-			if(wParam == exit_win) {
-			    int n = MessageBox(hwnd, "Do you want to exit this application?", "Exit Dialog Box", MB_YESNO | MB_ICONQUESTION);
-			    if(n == IDYES)
-                    DestroyWindow(hwnd);
+			switch(wParam) {
+                case exit_win: {
+                    int n = MessageBox(hwnd, "Do you want to exit this application?", "Exit Dialog Box", MB_YESNO | MB_ICONQUESTION);
+                    if(n == IDYES)
+                        DestroyWindow(hwnd);
+                    break;
+                }
+                case save_f:
+                    save_choose(hwnd);
+                    break;
+                case open_f:
+                    open_choose(hwnd);
+                    break;
+                case new_txt:
+                    SetWindowText(edit, "");
+                    break;
+                case help_msg:
+                    MessageBox(hwnd, "This is a basic text editor for Windows, which you can use to edit plain text, save text files and open text files", "About this Text Editor", MB_OK);
+                    break;
 			}
-			if(wParam == save_f) save_choose(hwnd);
-			if(wParam == open_f) open_choose(hwnd);
-			if(wParam == new_txt) SetWindowText(edit, "");
-			if(wParam == help_msg) MessageBox(hwnd, "This is a basic text editor for Windows, which you can use to edit plain text, save text files and open text files", "About this Text Editor", MB_OK);
 			break;
 		//Upon window creation
 		case WM_CREATE:
 			AddMenus(hwnd);
 			AddControls(hwnd);
+
 
 		case WM_SIZE:
 		//To resize child window when parent window is resized
