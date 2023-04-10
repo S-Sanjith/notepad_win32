@@ -26,8 +26,8 @@ void AddMenus(HWND hwnd) {
 
 	AppendMenu(hHelpMenu, MF_STRING, help_msg, "About this Text Editor");
 
-	AppendMenu(hMenu, MF_POPUP, (UINT)hFileMenu, "File");
-	AppendMenu(hMenu, MF_POPUP, (UINT)hHelpMenu, "Help");
+	AppendMenu(hMenu, MF_POPUP, (UINT_PTR)hFileMenu, "File");
+	AppendMenu(hMenu, MF_POPUP, (UINT_PTR)hHelpMenu, "Help");
 	SetMenu(hwnd, hMenu);
 }
 
