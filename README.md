@@ -15,7 +15,7 @@ Now use Visual Studio Community, Clang, MinGW (provided with CodeBlocks and Dev-
 
 Use this compiler to compile the code in main.cpp
 
-If you use MinGW, you can use te following command to compile the code:
+If you use MinGW, you can use the following command to compile the code:
 
 `g++ main.cpp -o notepad.exe`
 
